@@ -1,9 +1,8 @@
 function TimeScrollbar(el, viewportEl, offset) {
-	offset = offset || {
+	this.offset = offset || {
 		top: 10,
 		right: 10
 	};
-
 	this.monthNames = [
 		'January',
 		'February',
@@ -19,27 +18,29 @@ function TimeScrollbar(el, viewportEl, offset) {
 	];
 	this.displayDates = false;
 	this.el = el;
+	this.yearBlocks = [];
 	this.timelineEl = this.el.querySelector('.time-scrollbar-timeline');
 	this.trackerEl = this.el.querySelector('.time-scrollbar-tracker');
 	this.cursorEl = this.el.querySelector('.time-scrollbar-cursor');
 	this.viewportEl = viewportEl;
 
-	this._applyStyles(offset);
 	this._bindHandlers();
+
+	this._applyStyles();
 	this._renderBlocks();
 }
 
-TimeScrollbar.prototype._applyStyles = function (offset) {
+TimeScrollbar.prototype._applyStyles = function () {
 	var
 		top = this.viewportEl.getBoundingClientRect().top + window.scrollY,
 		bottomOffset = document.body.scrollHeight - this.viewportEl.getBoundingClientRect().bottom - window.scrollY;
 
 	this.el.style.position = 'fixed';
-	this.el.style.right = offset.right + 'px';
+	this.el.style.right = this.offset.right + 'px';
 	this.el.style.top = top +'px';
 	this.el.style.height = (document.body.clientHeight - top) + 'px';
 
-	this.timelineEl.style.top = offset.top + 'px';
+	this.timelineEl.style.top = this.offset.top + 'px';
 	this.timelineEl.style.bottom = bottomOffset + 'px';
 };
 
@@ -53,9 +54,9 @@ TimeScrollbar.prototype._bindHandlers = function () {
 
 		if (me.mouseDown) {
 			me._scrollTo(cursorPosition);
+			me._updateTrackerPosition(cursorPosition);
 			me.cursorEl.style.zIndex = 1;
 			me.trackerEl.style.zIndex = 2;
-			me._updateTrackerPosition(cursorPosition);
 		}
 		else {
 			me.cursorEl.style.zIndex = 2;
@@ -80,17 +81,23 @@ TimeScrollbar.prototype._bindHandlers = function () {
 
 	window.onscroll = function() {
 		var
-			relativePosition = window.scrollY / document.body.clientHeight,
-			trackerPosition = relativePosition * me.timelineEl.clientHeight;
+			relativePosition = window.scrollY / (document.body.scrollHeight - document.body.clientHeight),
+			trackerPosition = Math.round(relativePosition * me.timelineEl.clientHeight);
 
 		me._updateTrackerPosition(trackerPosition);
+	};
+
+	window.onresize = function() {
+		me._removeBlocks();
+		me._applyStyles();
+		me._renderBlocks();
 	};
 };
 
 TimeScrollbar.prototype._scrollTo = function (position) {
 	var
 		relativePosition = position / this.timelineEl.clientHeight,
-		scrollToPosition = relativePosition * document.body.clientHeight;
+		scrollToPosition = Math.round(relativePosition * (document.body.scrollHeight - document.body.clientHeight));
 
 	window.scrollTo(0, scrollToPosition);
 };
@@ -98,25 +105,31 @@ TimeScrollbar.prototype._scrollTo = function (position) {
 TimeScrollbar.prototype._getCursorPosition = function (event) {
 	var cursorPosition;
 
-	if (event.y < this.el.offsetTop + this.timelineEl.offsetTop) {
+	if (event.y < this.timelineEl.getBoundingClientRect().top) {
 		cursorPosition = 0;
 	}
-	else if (event.y > this.el.offsetTop + this.timelineEl.offsetTop + this.timelineEl.clientHeight - this.cursorEl.clientHeight) {
-		cursorPosition = (this.el.offsetTop + this.timelineEl.offsetTop + this.timelineEl.clientHeight - this.cursorEl.clientHeight) + 'px';
+	else if (event.y >= this.timelineEl.getBoundingClientRect().top && event.y <= this.timelineEl.getBoundingClientRect().bottom - 2) {
+		cursorPosition = event.y - this.timelineEl.getBoundingClientRect().top;
 	}
 	else {
-		cursorPosition = event.y - this.el.offsetTop - this.timelineEl.offsetTop;
+		cursorPosition = this.timelineEl.getBoundingClientRect().bottom - this.timelineEl.getBoundingClientRect().top - 2;
 	}
 
 	return cursorPosition;
 };
 
 TimeScrollbar.prototype._updateTrackerPosition = function (position) {
-	if (window.scrollY + window.innerHeight === document.body.scrollHeight) {
+	if (window.scrollY + window.innerHeight >= document.body.scrollHeight) {
 		position = this.timelineEl.clientHeight - 2;
 	}
 
 	this.trackerEl.style.top = position + 'px';
+};
+
+TimeScrollbar.prototype._removeBlocks = function () {
+	this.yearBlocks.forEach(function(block) {
+		block.remove();
+	});
 };
 
 TimeScrollbar.prototype._renderBlocks = function () {
@@ -172,6 +185,7 @@ TimeScrollbar.prototype._renderBlocks = function () {
 			yearEl.insertAdjacentElement('afterbegin', monthEl);
 		}
 
+		this.yearBlocks.push(yearEl);
 		yearEl.insertAdjacentHTML('afterbegin', year);
 		this.timelineEl.insertAdjacentElement('afterbegin', yearEl);
 	}
