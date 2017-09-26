@@ -119,7 +119,7 @@ TimeScrollbar.prototype._updateTrackerPosition = function (position) {
 };
 
 TimeScrollbar.prototype._removeBlocks = function () {
-	this.el.querySelectorAll('time-scrollbar-time-block').forEach(function(block) {
+	this.el.querySelectorAll('.time-scrollbar-time-block').forEach(function(block) {
 		block.remove();
 	});
 };
