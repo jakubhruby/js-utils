@@ -18,7 +18,6 @@ function TimeScrollbar(el, viewportEl, offset) {
 	];
 	this.displayDates = false;
 	this.el = el;
-	this.yearBlocks = [];
 	this.timelineEl = this.el.querySelector('.time-scrollbar-timeline');
 	this.trackerEl = this.el.querySelector('.time-scrollbar-tracker');
 	this.cursorEl = this.el.querySelector('.time-scrollbar-cursor');
@@ -35,7 +34,6 @@ TimeScrollbar.prototype._applyStyles = function () {
 		top = this.viewportEl.getBoundingClientRect().top + window.scrollY,
 		bottomOffset = document.body.scrollHeight - this.viewportEl.getBoundingClientRect().bottom - window.scrollY;
 
-	this.el.style.position = 'fixed';
 	this.el.style.right = this.offset.right + 'px';
 	this.el.style.top = top +'px';
 	this.el.style.height = (document.body.clientHeight - top) + 'px';
@@ -55,12 +53,6 @@ TimeScrollbar.prototype._bindHandlers = function () {
 		if (me.mouseDown) {
 			me._scrollTo(cursorPosition);
 			me._updateTrackerPosition(cursorPosition);
-			me.cursorEl.style.zIndex = 1;
-			me.trackerEl.style.zIndex = 2;
-		}
-		else {
-			me.cursorEl.style.zIndex = 2;
-			me.trackerEl.style.zIndex = 1;
 		}
 	};
 
@@ -127,7 +119,7 @@ TimeScrollbar.prototype._updateTrackerPosition = function (position) {
 };
 
 TimeScrollbar.prototype._removeBlocks = function () {
-	this.yearBlocks.forEach(function(block) {
+	this.el.querySelectorAll('time-scrollbar-time-block').forEach(function(block) {
 		block.remove();
 	});
 };
@@ -160,22 +152,22 @@ TimeScrollbar.prototype._renderBlocks = function () {
 	for (year in blocks) {
 		months = blocks[year];
 		yearEl = document.createElement('div');
+		yearEl.classList.add('time-scrollbar-time-block');
 		yearEl.style.flex = months.count + ' 0 auto';
-		yearEl.style.display = 'flex';
-		yearEl.style.flexDirection = 'column';
+		yearEl.title = year;
 
 		for (month in months.months) {
 			dates = months.months[month];
 			monthEl = document.createElement('div');
+			monthEl.classList.add('time-scrollbar-time-block');
 			monthEl.style.flex = dates.count + ' 0 auto';
-			monthEl.style.display = 'flex';
-			monthEl.style.flexDirection = 'column';
 			monthEl.title = this.monthNames[month] + ' ' + year;
 
 			if (this.displayDates) {
 				for (date in dates.dates) {
 					dateEl = document.createElement('div');
 					dateEl.textContent = date;
+					dateEl.classList.add('time-scrollbar-time-block');
 					dateEl.style.flex = dates.dates[date].count + ' 0 auto';
 					monthEl.insertAdjacentElement('afterbegin', dateEl);
 				}
@@ -185,8 +177,7 @@ TimeScrollbar.prototype._renderBlocks = function () {
 			yearEl.insertAdjacentElement('afterbegin', monthEl);
 		}
 
-		this.yearBlocks.push(yearEl);
 		yearEl.insertAdjacentHTML('afterbegin', year);
-		this.timelineEl.insertAdjacentElement('afterbegin', yearEl);
+		this.timelineEl.insertAdjacentElement('beforeend', yearEl);
 	}
 };
