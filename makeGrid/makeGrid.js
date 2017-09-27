@@ -1,3 +1,7 @@
+/**
+ * Aligns child elements into columns in a Pinterest-like style
+ * @param {Element} wrapperEl parent element
+ */
 function makeGrid(wrapperEl) {
 	var
 		i, highestCol, lowestCol, post,
@@ -11,6 +15,10 @@ function makeGrid(wrapperEl) {
 	wrapperEl.style.flexDirection = 'column';
 	wrapperEl.style.flexWrap = 'wrap';
 
+	/**
+	 * Returns responsively computed column count
+	 * @return {Number} column count
+	 */
 	function getColCount() {
 		return (wrapperElWidth < 1200) ? Math.floor(wrapperElWidth / 300) : 4;
 	}

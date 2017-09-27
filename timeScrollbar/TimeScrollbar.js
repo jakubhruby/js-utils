@@ -1,3 +1,10 @@
+/**
+ * Renders time scrollbar with dates gathered from child elements
+ * @param       {Element} el         scrollbar element
+ * @param       {Element} viewportEl viewport and also the parent element
+ * @param       {{}} offset          top and right offset
+ * @constructor
+ */
 function TimeScrollbar(el, viewportEl, offset) {
 	this.offset = offset || {
 		top: 10,
@@ -29,6 +36,9 @@ function TimeScrollbar(el, viewportEl, offset) {
 	this._renderBlocks();
 }
 
+/**
+ * Applies additional computed CSS styles
+ */
 TimeScrollbar.prototype._applyStyles = function () {
 	var
 		top = this.viewportEl.getBoundingClientRect().top + window.scrollY,
@@ -42,10 +52,13 @@ TimeScrollbar.prototype._applyStyles = function () {
 	this.timelineEl.style.bottom = bottomOffset + 'px';
 };
 
+/**
+ * Binds mouse action handlers
+ */
 TimeScrollbar.prototype._bindHandlers = function () {
 	var me = this;
 
-	this.el.onmousemove = function(event) {
+	this.el.onmousemove = function _onMouseMove(event) {
 		var cursorPosition = me._getCursorPosition(event);
 
 		me.cursorEl.style.top = cursorPosition + 'px';
@@ -56,7 +69,7 @@ TimeScrollbar.prototype._bindHandlers = function () {
 		}
 	};
 
-	this.el.onmousedown = function(event) {
+	this.el.onmousedown = function _onMouseDown(event) {
 		var trackerPosition = me._getCursorPosition(event);
 
 		me._scrollTo(trackerPosition);
@@ -64,14 +77,14 @@ TimeScrollbar.prototype._bindHandlers = function () {
 		me.mouseDown = true;
 	};
 
-	window.onmouseup = function(event) {
+	window.onmouseup = function _onMouseUp(event) {
 		var trackerPosition = me._getCursorPosition(event);
 
 		me._updateTrackerPosition(trackerPosition);
 		me.mouseDown = false;
 	};
 
-	window.onscroll = function() {
+	window.onscroll = function _onScroll() {
 		var
 			relativePosition = window.scrollY / (document.body.scrollHeight - document.body.clientHeight),
 			trackerPosition = Math.round(relativePosition * me.timelineEl.clientHeight);
@@ -79,13 +92,17 @@ TimeScrollbar.prototype._bindHandlers = function () {
 		me._updateTrackerPosition(trackerPosition);
 	};
 
-	window.onresize = function() {
+	window.onresize = function _onResize() {
 		me._removeBlocks();
 		me._applyStyles();
 		me._renderBlocks();
 	};
 };
 
+/**
+ * Scrolls to Y position
+ * @param {Number} position Y position
+ */
 TimeScrollbar.prototype._scrollTo = function (position) {
 	var
 		relativePosition = position / this.timelineEl.clientHeight,
@@ -94,6 +111,11 @@ TimeScrollbar.prototype._scrollTo = function (position) {
 	window.scrollTo(0, scrollToPosition);
 };
 
+/**
+ * Returns Y position with inside timeline element
+ * @param  {Event} event mouse event
+ * @return {Number}      Y position
+ */
 TimeScrollbar.prototype._getCursorPosition = function (event) {
 	var cursorPosition;
 
@@ -110,6 +132,10 @@ TimeScrollbar.prototype._getCursorPosition = function (event) {
 	return cursorPosition;
 };
 
+/**
+ * Updates Y position of tracker element, with correction of tracker height
+ * @param {Number} position Y position
+ */
 TimeScrollbar.prototype._updateTrackerPosition = function (position) {
 	if (window.scrollY + window.innerHeight >= document.body.scrollHeight) {
 		position = this.timelineEl.clientHeight - 2;
@@ -118,12 +144,18 @@ TimeScrollbar.prototype._updateTrackerPosition = function (position) {
 	this.trackerEl.style.top = position + 'px';
 };
 
+/**
+ * Removes all previously rendered time blocks to avoid duplicities while re-rendering
+ */
 TimeScrollbar.prototype._removeBlocks = function () {
 	this.el.querySelectorAll('.time-scrollbar-time-block').forEach(function(block) {
 		block.remove();
 	});
 };
 
+/**
+ * Renders time blocks based on data attributes found in viewport children elements
+ */
 TimeScrollbar.prototype._renderBlocks = function () {
 	var
 		year, months, month, dates, date, yearEl, monthEl, dateEl,
