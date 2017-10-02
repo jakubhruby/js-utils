@@ -15,6 +15,7 @@ function TimeScrollbar(el, viewportEl, offset) {
 		'February',
 		'March',
 		'April',
+		'May',
 		'June',
 		'July',
 		'August',
