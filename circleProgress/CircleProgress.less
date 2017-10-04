@@ -1,56 +1,56 @@
 .circle-progress {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    border: 1px solid gray;
-    border-radius: 50%;
-    background: white;
-    overflow: hidden;
+	position: relative;
+	width: 100px;
+	height: 100px;
+	border: 1px solid gray;
+	border-radius: 50%;
+	background: white;
+	overflow: hidden;
 
-    .half-clip {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 50%;
-        overflow: hidden;
+	.half-clip {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 50%;
+		overflow: hidden;
 
-        &-first {
-            right: 0;
-        }
+		&-first {
+			right: 0;
+		}
 
-        &-second {
-            left: 0;
-        }
-    }
+		&-second {
+			left: 0;
+		}
+	}
 
-    .half {
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
+	.half {
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
 
-        &-first {
-            background: blue;
-            transform-origin: center left;
-            transform: rotate(-180deg);
-        }
+		&-first {
+			background: blue;
+			transform-origin: center left;
+			transform: rotate(-180deg);
+		}
 
-        &-second {
-            background: blue;
-            transform-origin: center right;
-            transform: rotate(180deg);
-        }
-    }
+		&-second {
+			background: blue;
+			transform-origin: center right;
+			transform: rotate(180deg);
+		}
+	}
 
-    .center-mask {
-        display: none;
-        background: white;
-        position: absolute;
-        left: 10%;
-        top: 10%;
-        bottom: 10%;
-        right: 10%;
-        border-radius: 50%;
-    }
+	.center-mask {
+		display: none;
+		background: white;
+		position: absolute;
+		left: 10%;
+		top: 10%;
+		bottom: 10%;
+		right: 10%;
+		border-radius: 50%;
+	}
 }

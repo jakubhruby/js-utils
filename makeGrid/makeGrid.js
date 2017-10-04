@@ -23,10 +23,6 @@ function makeGrid(wrapperEl) {
 		return (wrapperElWidth < 1200) ? Math.floor(wrapperElWidth / 300) : 4;
 	}
 
-	if (pendingRefresh) {
-		clearTimeout(pendingRefresh);
-	}
-
 	for (i = 0; i < COL_COUNT; i++) {
 		col_heights.push(0);
 	}
