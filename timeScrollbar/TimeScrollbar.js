@@ -87,7 +87,7 @@ TimeScrollbar.prototype._bindHandlers = function () {
 
 	window.onscroll = function _onScroll() {
 		var
-			relativePosition = window.scrollY / (document.body.scrollHeight - document.body.clientHeight),
+			relativePosition = window.scrollY / ((document.body.scrollHeight - document.body.clientHeight) || 1),
 			trackerPosition = Math.round(relativePosition * me.timelineEl.clientHeight);
 
 		me._updateTrackerPosition(trackerPosition);

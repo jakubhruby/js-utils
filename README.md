@@ -22,6 +22,13 @@ Argument ``options`` is optional and may have several properties:
 
 Demo: https://codepen.io/jakubhruby/pen/yzPXWM
 
+## colorUtils/colorUtils.js
+Brings some useful color related functions
+
+- **isColorBright(color)**
+Returns true when the given color is bright according to W3C formula https://www.w3.org/TR/AERT#color-contrast and the color opacity.
+Demo: https://codepen.io/jakubhruby/pen/mBNGwO
+
 ## makeGrid/makeGrid.js
 Makes pinterest-like grid responsive layout.
 ### Usage
