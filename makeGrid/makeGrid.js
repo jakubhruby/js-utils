@@ -4,16 +4,13 @@
  */
 function makeGrid(wrapperEl) {
 	var
-		i, highestCol, lowestCol, post,
+		i, highestCol, lowestCol, post, colWidth,
 		wrapperElWidth = wrapperEl.clientWidth,
 		posts = wrapperEl.children,
 		col_heights = [],
-		order = 1,
 		COL_COUNT = getColCount();
 
-	wrapperEl.style.display = 'flex';
-	wrapperEl.style.flexDirection = 'column';
-	wrapperEl.style.flexWrap = 'wrap';
+	wrapperEl.style.position = 'relative';
 
 	/**
 	 * Returns responsively computed column count
@@ -23,6 +20,8 @@ function makeGrid(wrapperEl) {
 		return (wrapperElWidth < 1200) ? Math.floor(wrapperElWidth / 300) : 4;
 	}
 
+	colWidth = Math.floor(wrapperElWidth / COL_COUNT);
+
 	for (i = 0; i < COL_COUNT; i++) {
 		col_heights.push(0);
 	}
@@ -30,10 +29,12 @@ function makeGrid(wrapperEl) {
 	for (i = 0; i < posts.length; i++) {
 		post = posts[i];
 		lowestCol = Math.min.apply(Math, col_heights);
-		order = col_heights.indexOf(lowestCol) + 1;
-		post.style.order = order;
-		post.style.width = Math.floor(wrapperElWidth / COL_COUNT) + 'px';
-		col_heights[order - 1] += parseFloat(post.clientHeight);
+		order = col_heights.indexOf(lowestCol);
+		post.style.width = colWidth + 'px';
+		post.style.position = 'absolute';
+		post.style.left = order * colWidth + 'px';
+		post.style.top = col_heights[order] + 'px';
+		col_heights[order] += parseFloat(post.clientHeight);
 	}
 
 	highestCol = Math.max.apply(Math, col_heights);

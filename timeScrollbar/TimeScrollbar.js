@@ -159,7 +159,7 @@ TimeScrollbar.prototype._removeBlocks = function () {
  */
 TimeScrollbar.prototype._renderBlocks = function () {
 	var
-		year, months, month, dates, date, yearEl, monthEl, dateEl,
+		months, dates, yearEl, monthEl, dateEl, years,
 		eventEls = this.viewportEl.querySelectorAll('[data-event-date]'),
 		blocks = {};
 
@@ -170,47 +170,54 @@ TimeScrollbar.prototype._renderBlocks = function () {
 			month = eventDate.getMonth(),
 			date = eventDate.getDate();
 
-		blocks[year] = blocks[year] || {count: 0, months: {}};
-		blocks[year].count++;
-
-		blocks[year].months[month] = blocks[year].months[month] || {count: 0, dates: {}};
-		blocks[year].months[month].count++;
-
-		if (this.displayDates) {
-			blocks[year].months[month].dates[date] = blocks[year].months[month].dates[date] || {count: 0, events: []};
-			blocks[year].months[month].dates[date].count++;
-		}
+		blocks[year] = blocks[year] || {};
+		blocks[year][month] = blocks[year][month] || {};
+		blocks[year][month][date] = blocks[year][month][date] || 0;
+		blocks[year][month][date]++;
 	}, this);
 
-	for (year in blocks) {
-		months = blocks[year];
+	years = Object.keys(blocks).sort(function(a, b) {
+		return a > b ? -1 : 1;
+	});
+
+	years.forEach(function(year) {
+		months = Object.keys(blocks[year]).sort(function(a, b) {
+			return a > b ? -1 : 1;
+		});
 		yearEl = document.createElement('div');
 		yearEl.classList.add('time-scrollbar-time-block');
-		yearEl.style.flex = months.count + ' 0 auto';
+		yearEl.style.flex = months.length + ' 0 auto';
 		yearEl.title = year;
 
-		for (month in months.months) {
-			dates = months.months[month];
+		months.forEach(function(month) {
+			dates = Object.keys(blocks[year][month]).sort(function(a, b) {
+				return parseInt(a) > parseInt(b) ? -1 : 1;
+			});
 			monthEl = document.createElement('div');
 			monthEl.classList.add('time-scrollbar-time-block');
-			monthEl.style.flex = dates.count + ' 0 auto';
 			monthEl.title = this.monthNames[month] + ' ' + year;
 
 			if (this.displayDates) {
-				for (date in dates.dates) {
+				monthEl.style.flex = dates.length + ' 0 auto';
+				dates.forEach(function(date) {
 					dateEl = document.createElement('div');
 					dateEl.textContent = date;
 					dateEl.classList.add('time-scrollbar-time-block');
-					dateEl.style.flex = dates.dates[date].count + ' 0 auto';
-					monthEl.insertAdjacentElement('afterbegin', dateEl);
-				}
+					dateEl.style.flex = blocks[year][month][date] + ' 0 auto';
+					monthEl.insertAdjacentElement('beforeend', dateEl);
+				}, this);
+			}
+			else {
+				monthEl.style.flex = Object.values(blocks[year][month]).reduce(function(accumulator, currValue) {
+					return accumulator + currValue;
+				}) + ' 0 auto';
 			}
 
 			monthEl.insertAdjacentHTML('afterbegin', '—');
-			yearEl.insertAdjacentElement('afterbegin', monthEl);
-		}
+			yearEl.insertAdjacentElement('beforeend', monthEl);
+		}, this);
 
 		yearEl.insertAdjacentHTML('afterbegin', year);
 		this.timelineEl.insertAdjacentElement('beforeend', yearEl);
-	}
+	}, this);
 };
