@@ -1,5 +1,5 @@
 {
-	"name": "form-manager",
+	"name": "form-management",
 	"version": "0.0.1",
 	"description": "Form validation and value management layer.",
 	"main": "index.js",
