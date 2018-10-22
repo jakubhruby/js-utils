@@ -1,0 +1,38 @@
+{
+	"name": "waterfall-exec",
+	"version": "0.0.1",
+	"description": "FIFO executor for array of Promises",
+	"main": "index.js",
+	"scripts": {
+		"test": "ava"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/jakubhruby/layout-utils.git"
+	},
+	"keywords": [
+		"Promises execution",
+		"waterfall"
+	],
+	"author": "Jakub Hrubý",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/jakubhruby/layout-utils/issues"
+	},
+	"homepage": "https://github.com/jakubhruby/layout-utils#readme",
+	"dependencies": {
+		"assert-utils": "^0.0.7"
+	},
+	"devDependencies": {
+		"ava": "1.0.0-rc.1",
+		"esm": "^3.0.84"
+	},
+	"ava": {
+		"files": [
+			"tests/*.js"
+		],
+		"require": [
+			"esm"
+		]
+	}
+}

@@ -1,0 +1,53 @@
+{
+	"globals": {
+		"__dirname": true,
+		"module": true,
+		"process": true,
+		"require": true,
+		"google": true,
+		"exports": true
+	},
+	"parserOptions": {
+		"sourceType": "module",
+		"ecmaVersion": 2017
+	},
+	"env": {
+		"es6": true,
+		"browser": true
+	},
+	"extends": "eslint:recommended",
+	"rules": {
+		"indent": ["error", "tab", {
+			"SwitchCase": 1
+		}],
+		"linebreak-style": ["error", "unix"],
+		"strict": "error",
+
+		"comma-dangle": ["error", "never"],
+		"camelcase": ["warn", {
+			"properties": "never"
+		}],
+		"semi": "error",
+		"no-console": "off",
+		"no-extra-boolean-cast": "off",
+
+		"space-before-function-paren": ["error", "never"],
+		"space-before-blocks": "error",
+		"brace-style": ["error", "stroustrup"],
+		"keyword-spacing": "error",
+		"space-infix-ops": "error",
+		"padding-line-between-statements": ["error", {
+			"blankLine": "always", "prev": "*", "next": ["block", "if"]
+		}],
+		"object-property-newline": "error",
+		"key-spacing": "error",
+
+		"no-undef": ["warn"],
+		"no-unused-vars": "warn",
+		"vars-on-top": "error",
+		"one-var": "error",
+		"newline-after-var": "error",
+		"one-var-declaration-per-line": ["error", "initializations"],
+		"no-var": "warn"
+	}
+}
