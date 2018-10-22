@@ -102,7 +102,15 @@ export default class Form {
 					data[name] = field.files;
 				}
 				else if (field.closest('[type="radio"]') === field) {
-					data[name] = this.form.querySelector('[type="radio"][name="' + name + '"]:checked').value;
+					let
+						checkedField = this.form.querySelector('[type="radio"][name="' + name + '"]:checked');
+
+					if (checkedField) {
+						data[name] = checkedField.value;
+					}
+					else {
+						data[name] = undefined;
+					}
 				}
 				else if (field.closest('[type="checkbox"]') === field) {
 					data[name] = field.closest(':checked') === field;
@@ -125,23 +133,28 @@ export default class Form {
 	}
 
 	setEditable(editable) {
-		console.assert(typeof editable === 'boolean');
+		assert.type(editable, 'boolean');
 
 		if (editable != this.editable) {
+			let
+				buttons = this.getButtons();
+
 			this.cancelEdit();
 			this.editable = editable;
 
-			if (editable && this.displayEdit) {
-				this.form.querySelector('.edit-button').style.display = 'block';
-			}
-			else {
-				this.form.querySelector('.edit-button').style.display = 'none';
+			if (buttons.edit) {
+				if (editable && this.displayEdit) {
+					buttons.edit.style.display = 'block';
+				}
+				else {
+					buttons.edit.style.display = 'none';
+				}
 			}
 		}
 	}
 
 	setData(data) {
-		console.assert(typeof data === 'object');
+		assert.type(data, '{}');
 
 		this.form.querySelectorAll('.field').forEach(field => {
 			let
@@ -152,7 +165,10 @@ export default class Form {
 					data[name] = '';
 				}
 				else if (field.closest('select') === field && !data[name]) {
-					data[name] = field.querySelector('option').value;
+					let
+						option = field.querySelector('option');
+
+					data[name] = option ? option.value : undefined;
 				}
 				else if (field.getAttribute('type') === 'checkbox' && typeof data[name] === 'string') {
 					data[name] = data[name] === 'on' ? true : false;
@@ -160,13 +176,23 @@ export default class Form {
 
 				if (data[name] !== undefined) {
 					if (field.closest('[type="radio"]') === field) {
-						this.form.querySelector('[type="radio"][name="' + name + '"]').checked = true;
+						let
+							fieldToCheck = this.form.querySelector('[type="radio"][name="' + name + '"]');
+
+						if (fieldToCheck) {
+							fieldToCheck.checked = true;
+						}
 					}
 					else if (field.closest('[type="checkbox"]') === field) {
 						field.checked = data[name];
 					}
 					else if (field.closest('select') === field) {
-						field.querySelector('option[value="' + data[name] + '"]').selected = true;
+						let
+							optionToSelect = field.querySelector('option[value="' + data[name] + '"]');
+
+						if (optionToSelect) {
+							optionToSelect.selected = true;
+						}
 					}
 					else {
 						field.value = data[name];
@@ -178,51 +204,87 @@ export default class Form {
 	}
 
 	setId(id) {
-		console.assert(typeof id === 'number');
+		assert.type(id, 'string');
 		this.id = id;
 	}
 
 	editFields() {
+		let
+			buttons = this._getButtons(),
+			firstField = this.form.querySelector('.field:not(.readonly)');
+
 		this.form.classList.add('active');
-		this.form.querySelector('.add-new').style.display = 'none';
+
+		if (buttons.addNew) {
+			buttons.addNew.style.display = 'none';
+		}
+
+		if (buttons.edit) {
+			buttons.edit.style.display = 'none';
+		}
+
+		if (buttons.save) {
+			buttons.save.style.display = 'block';
+		}
+
+		if (buttons.cancel) {
+			buttons.cancel.style.display = 'block';
+		}
+
+		if (buttons.delete && this.displayDelete) {
+			buttons.delete.style.display = 'block';
+		}
+
 		this.form.querySelectorAll('.field').forEach(field => {
 			field.classList.remove('readonly');
 			field.disabled = false;
 		});
-		this.form.querySelector('.edit-button').style.display = 'none';
-		this.form.querySelector('.save-button').style.display = 'block';
 
-		if (this.displayDelete) {
-			this.form.querySelector('.delete-button').style.display = 'block';
+		if (firstField) {
+			firstField.focus();
 		}
-		this.form.querySelector('.cancel-button').style.display = 'block';
-		this.form.querySelector('.field:not(.readonly)').focus();
 	}
 
 	cancelEdit() {
+		let
+			buttons = this._getButtons();
+
 		if (!this.persistentEditMode) {
 			this.form.classList.remove('active');
 
-			if (this.form.classList.contains('entry')) {
-				this.form.querySelector('.add-new').parentNode.removeChild(this.form.querySelector('.add-new'));
+			if (this.form.classList.contains('entry') && buttons.addNew) {
+				buttons.addNew.parentNode.removeChild(buttons.addNew);
+				delete buttons.addNew;
 			}
-			else {
-				this.form.querySelector('.add-new').style.display = 'block';
+			else if (buttons.addNew) {
+				buttons.addNew.style.display = 'block';
 			}
+
 			this.form.querySelectorAll('.field').forEach(field => {
 				field.classList.add('readonly');
 				field.disabled = true;
 			});
 
-			if (this.displayEdit) {
-				this.form.querySelector('.edit-button').style.display = 'block';
+			if (buttons.edit && this.displayEdit) {
+				buttons.edit.style.display = 'block';
 			}
-			this.form.querySelector('.save-button').style.display = 'none';
-			this.form.querySelector('.delete-button').style.display = 'none';
-			this.form.querySelector('.cancel-button').style.display = 'none';
+
+			if (buttons.save) {
+				buttons.save.style.display = 'none';
+			}
+
+			if (buttons.cancel) {
+				buttons.cancel.style.display = 'none';
+			}
+
+			if (buttons.delete) {
+				buttons.delete.style.display = 'none';
+			}
+
 			document.activeElement.blur();
 			window.getSelection().empty();
 		}
+
 		this.hideLoadingMask();
 		this.form.querySelectorAll('.invalid').forEach(field => {
 			field.classList.remove('invalid');
@@ -239,7 +301,7 @@ export default class Form {
 					return validation;
 				})) {
 					this.dirty = false;
-					console.assert(typeof this.handlers.save === 'function');
+					assert.type(this.handlers.save, 'fn');
 					this.handlers.save.call(this);
 
 					if (this.displayLoadingMask) {
@@ -267,7 +329,8 @@ export default class Form {
 	 */
 	validateField(field) {
 		let
-			label, valid,
+			valid,
+			label = this._getLabel(field),
 			fieldName = field.getAttribute('name'),
 			validationValue = field.value,
 			validators = (field.getAttribute('data-validators') || 'default').split(' '),
@@ -282,23 +345,12 @@ export default class Form {
 			validationValue = field.checked;
 		}
 
-		label = field.previousSibling();
-
-		if (!label) {
-			label = field.nextSibling();
-		}
-
-		if (!label) {
-			label = field.parentNode.previousSibling();
-		}
-
-		if (!label) {
-			label = field.parentNode.nextSibling();
-		}
-
 		if (validators.indexOf('passwordConfirm') >= 0) {
+			let
+				relatedField = this.form.querySelector(`[name="${field.getAttribute('data-related-field')}"]`);
+
 			validationValue = {
-				password: field.closest('form').querySelector(`[name="${field.getAttribute('data-related-field')}"]`).value,
+				password: relatedField ? relatedField.value : undefined,
 				passwordConfirm: field.value
 			};
 		}
@@ -336,13 +388,19 @@ export default class Form {
 						.then(function(validationResult) {
 							if (validationResult.valid || !this.$form.hasClass('active')) {
 								field.classList.remove('invalid');
-								label.classList.remove('invalid');
+
+								if (label) {
+									label.classList.remove('invalid');
+								}
 							}
 							else {
 								validationWaterfall.stop();
 								field.classList.add('invalid');
-								label.classList.add('invalid');
-								label.setAttribute('data-hint', validationResult.hint || '');
+
+								if (label) {
+									label.classList.add('invalid');
+									label.setAttribute('data-hint', validationResult.hint || '');
+								}
 							}
 							this.validatedValues[fieldName].valid = validationResult.valid;
 							return validationResult.valid;
@@ -377,6 +435,9 @@ export default class Form {
 	}
 
 	_bindFormHandlers() {
+		let
+			buttons = this._getButtons();
+
 		this.form.addEventListener('click', event => {
 			if (event.target.tagName !== 'A' && this.editable && this.editOnClick) {
 				event.stopPropagation();
@@ -393,42 +454,58 @@ export default class Form {
 			this.save();
 		});
 
-		this.form.querySelector('.edit-button').addEventListener('click', event => {
-			if (this.editable) {
+		if (buttons.edit) {
+			buttons.edit.addEventListener('click', event => {
+				if (this.editable) {
+					event.stopPropagation();
+					this.editFields();
+				}
+			});
+		}
+
+		if (buttons.save) {
+			buttons.save.addEventListener('click', event => {
 				event.stopPropagation();
-				this.editFields();
-			}
-		});
+				this.save();
+			});
+		}
 
-		this.form.querySelector('.cancel-button').addEventListener('click', event => {
-			event.stopPropagation();
-			this.cancelEdit();
-		});
+		if (buttons.cancel) {
+			buttons.cancel.addEventListener('click', event => {
+				event.stopPropagation();
+				this.cancelEdit();
+			});
+		}
 
-		this.form.querySelector('.delete-button').addEventListener('click', event => {
-			console.assert(typeof this.handlers.delete === 'function');
-			event.preventDefault();
-			event.stopPropagation();
-			this.handlers.delete.call(this);
+		if (buttons.delete) {
+			buttons.delete.addEventListener('click', event => {
+				assert.type(this.handlers.delete, '?fn');
 
-			if (this.displayLoadingMask) {
-				this.showLoadingMask();
-			}
-		});
+				event.preventDefault();
+				event.stopPropagation();
+
+				if (this.handlers.delete) {
+					this.handlers.delete.call(this);
+				}
+
+				if (this.displayLoadingMask) {
+					this.showLoadingMask();
+				}
+			});
+		}
 
 		this.form.querySelectorAll('.field').forEach(field => {
 			let
 				handler = event => {
 					let
 						field = event.target,
-						label = field.previousSibling('label');
-
-					if (!label) {
-						label = field.nextSibling('label');
-					}
+						label = this._getLabel(field);
 
 					field.classList.remove('invalid');
-					label.classList.remove('invalid');
+
+					if (label) {
+						label.classList.remove('invalid');
+					}
 					this.dirty = true;
 				};
 
@@ -438,7 +515,10 @@ export default class Form {
 				this._validatePreviousFields(event.target);
 			});
 			field.addEventListener('blur', event => {
-				if (event.target === this.form.querySelectorAll('.field:not(.readonly)').pop()) {
+				let
+					fields = this.form.querySelectorAll('.field:not(.readonly)');
+
+				if (event.target === fields[fields.length - 1]) {
 					this.validateForm();
 				}
 
@@ -476,12 +556,43 @@ export default class Form {
 	}
 
 	showLoadingMask() {
-		this.form.querySelector('.loading-mask').classList.add('active');
+		let
+			loadingMask = this.form.querySelector('.loading-mask');
+
+		if (loadingMask) {
+			loadingMask.classList.add('active');
+		}
 	}
 
 	hideLoadingMask() {
-		this.form.querySelector('.loading-mask').classList.remove('active');
+		let
+			loadingMask = this.form.querySelector('.loading-mask');
 
+		if (loadingMask) {
+			loadingMask.classList.remove('active');
+		}
+	}
+
+	_getButtons() {
+		return {
+			addNew: this.form.querySelector('.add-new'),
+			edit: this.form.querySelector('.edit-button'),
+			save: this.form.querySelector('.save-button'),
+			cancel: this.form.querySelector('.cancel-button'),
+			delete: this.form.querySelector('.delete-button')
+		};
+	}
+
+	_getLabel(field) {
+		let
+			label,
+			fieldId = field.getAttribute('id');
+
+		if (fieldId !== undefined) {
+			label = this.form.querySelector('label[for="' + fieldId + '"]');
+		}
+
+		return label;
 	}
 
 	_compareObjects(a, b, strict) {
@@ -561,14 +672,16 @@ Form.prototype.VALIDATORS = {
 		};
 	},
 	checked: function(value) {
-		console.assert(typeof value === 'boolean');
+		assert.type(value, 'boolean');
+
 		return {
 			valid: value,
 			hint: this._translate('This field has to be checked')
 		};
 	},
 	unchecked: function(value) {
-		console.assert(typeof value === 'boolean');
+		assert.type(value, 'boolean');
+
 		return {
 			valid: !value,
 			hint: this._translate('This field has to be unchecked')
