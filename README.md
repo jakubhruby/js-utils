@@ -1,5 +1,5 @@
-# layout-utils
-Bunch of layout utilities
+# js-utils
+Bunch of JS utilities
 
 ## circleProgress/CircleProgress.js
 Makes pinterest-like grid responsive layout.

@@ -5,6 +5,11 @@ const
 
 export default class Waterfall {
 	constructor(config) {
+		assert.type(config, {
+			_required: false,
+			onNewPromise: '?function'
+		});
+
 		config = config || {};
 		this.onNewPromise = config.onNewPromise;
 		this.options = {};
@@ -13,7 +18,7 @@ export default class Waterfall {
 	/**
 	 * @param  {Array} jobs array of functions, each returning either Promise or data
 	 * @param  {[options]} options options object
-	 * @param  {[Boolean]} options.waitForItems causes main Promise is never resolved and Watrefall executes every newly added job
+	 * @param  {[Boolean]} options.waitForItems causes main Promise is never resolved and Waterfall executes every newly added job
 	 * @param  {[Number]} options.waitTimeout timeout for waitForItems, undefined means no timeout
 	 * @param  {[Number]} options.checkInterval interval for waitForItems in ms, default 1000
 	 * @return {Promise}
@@ -23,8 +28,8 @@ export default class Waterfall {
 		assert.type(options, {
 			_required: false,
 			waitForItems: '?boolean',
-			waitTimeout: '?boolean',
-			checkInterval: '?boolean'
+			waitTimeout: '?number',
+			checkInterval: '?number'
 		});
 
 		this.jobs = jobs;

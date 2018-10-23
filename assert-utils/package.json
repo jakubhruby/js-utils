@@ -1,7 +1,7 @@
 {
-	"name": "waterfall-exec",
-	"version": "0.0.2",
-	"description": "FIFO executor for array of Promises",
+	"name": "assert-utils",
+	"version": "0.0.10",
+	"description": "Assertion tool that deeply compares value to its definition.",
 	"main": "index.js",
 	"scripts": {
 		"test": "ava"
@@ -11,8 +11,9 @@
 		"url": "git+https://github.com/jakubhruby/js-utils.git"
 	},
 	"keywords": [
-		"Promises execution",
-		"waterfall"
+		"assert",
+		"type",
+		"object"
 	],
 	"author": "Jakub Hrubý",
 	"license": "ISC",
@@ -20,11 +21,9 @@
 		"url": "https://github.com/jakubhruby/js-utils/issues"
 	},
 	"homepage": "https://github.com/jakubhruby/js-utils#readme",
-	"dependencies": {
-		"assert-utils": "latest"
-	},
 	"devDependencies": {
-		"ava": "1.0.0-rc.1",
+		"ava": "^0.25.0",
+		"browser-env": "^3.2.5",
 		"esm": "^3.0.84"
 	},
 	"ava": {
@@ -33,7 +32,8 @@
 			"tests/*.js"
 		],
 		"require": [
-			"esm"
+			"esm",
+			"./tests/_helper.js"
 		]
 	}
 }

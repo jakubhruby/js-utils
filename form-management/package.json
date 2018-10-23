@@ -1,6 +1,6 @@
 {
 	"name": "form-management",
-	"version": "0.0.3",
+	"version": "0.0.6",
 	"description": "Form validation and value management layer.",
 	"main": "index.js",
 	"scripts": {
@@ -8,7 +8,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/jakubhruby/layout-utils.git"
+		"url": "git+https://github.com/jakubhruby/js-utils.git"
 	},
 	"keywords": [
 		"form",
@@ -17,10 +17,10 @@
 	"author": "Jakub Hrubý",
 	"license": "ISC",
 	"bugs": {
-		"url": "https://github.com/jakubhruby/layout-utils/issues"
+		"url": "https://github.com/jakubhruby/js-utils/issues"
 	},
-	"homepage": "https://github.com/jakubhruby/layout-utils#readme",
+	"homepage": "https://github.com/jakubhruby/js-utils#readme",
 	"dependencies": {
-		"assert-utils": "^0.0.6"
+		"assert-utils": "latest"
 	}
 }

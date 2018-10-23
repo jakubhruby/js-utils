@@ -20,18 +20,19 @@ export default class Form {
 	 * @param {Object} [config.plugins] dictionary of special fields, each in form {init: fn(field) {}, getValue() {return value;}}
 	 * @param {Boolean} [config.editable] enable form editing @default true
 	 * @param {Boolean} [config.editOnClick] enable edit mode by clicking somewhere on form @default false
-	 * @param {Boolean} [config.persistentEditMode] edit mode is always enabled (standard form) @default true
+	 * @param {Boolean} [config.persistentEditMode] edit mode is always enabled (standard form behavior) @default true
 	 * @param {Boolean} [config.displayEdit] display edit button @default false
 	 * @param {Boolean} [config.displayDelete] display delete button @default false
 	 * @param {Boolean} [config.displayLoadingMask] display overlay with loading icon when saving form @default false
+	 * @param {Function} [config.translate] translate function in form function(text) {return translatedText;}
 	 */
 	constructor(config) {
 		assert.type(config, {
 			form: 'element',
 			handlers: {
-				save: 'fn',
-				delete: '?fn',
-				change: '?fn'
+				save: 'function',
+				delete: '?function',
+				change: '?function'
 			},
 			id: '?string',
 			validators: '?{}',
@@ -41,7 +42,8 @@ export default class Form {
 			persistentEditMode: '?boolean',
 			displayEdit: '?boolean',
 			displayDelete: '?boolean',
-			displayLoadingMask: '?boolean'
+			displayLoadingMask: '?boolean',
+			translate: '?function'
 		});
 
 		this.form = config.form;
@@ -55,6 +57,7 @@ export default class Form {
 		this.displayEdit = config.displayEdit;
 		this.displayDelete = config.displayDelete;
 		this.displayLoadingMask = config.displayLoadingMask;
+		this.translate = config.translate;
 
 		this.validatedValues = {};
 		this.data = {};
@@ -66,8 +69,8 @@ export default class Form {
 		for (let plugin in this.plugins) {
 			assert.value(this.form.querySelectorAll(`.field[name="${plugin}"]`).length, 1);
 			assert.type(this.plugins[plugin], {
-				init: 'fn',
-				getValue: 'fn'
+				init: 'function',
+				getValue: 'function'
 			});
 
 			this.plugins[plugin].init(this.form.querySelectorAll(`.field[name="${plugin}"]`));
@@ -132,6 +135,9 @@ export default class Form {
 		return !this._compareObjects(this.data, this.getData());
 	}
 
+	/**
+	 * @param {Boolean} editable
+	 */
 	setEditable(editable) {
 		assert.type(editable, 'boolean');
 
@@ -153,6 +159,9 @@ export default class Form {
 		}
 	}
 
+	/**
+	 * @param {Object} data
+	 */
 	setData(data) {
 		assert.type(data, '{}');
 
@@ -203,6 +212,9 @@ export default class Form {
 		});
 	}
 
+	/**
+	 * @param {String} id
+	 */
 	setId(id) {
 		assert.type(id, 'string');
 		this.id = id;
@@ -301,7 +313,7 @@ export default class Form {
 					return validation;
 				})) {
 					this.dirty = false;
-					assert.type(this.handlers.save, 'fn');
+					assert.type(this.handlers.save, 'function');
 					this.handlers.save.call(this);
 
 					if (this.displayLoadingMask) {
@@ -325,7 +337,8 @@ export default class Form {
 	}
 
 	/**
-	 * @return {oolean or Promise}
+	 * @param {Element} field
+	 * @return {Boolean or Promise}
 	 */
 	validateField(field) {
 		let
@@ -386,7 +399,7 @@ export default class Form {
 
 					return fieldValidation
 						.then(function(validationResult) {
-							if (validationResult.valid || !this.$form.hasClass('active')) {
+							if (validationResult.valid || !this.form.classList.contains('active')) {
 								field.classList.remove('invalid');
 
 								if (label) {
@@ -418,6 +431,9 @@ export default class Form {
 		this.validatedValues = {};
 	}
 
+	/**
+	 * @param  {Element} field
+	 */
 	_validatePreviousFields(field) {
 		let
 			fieldVisited = false;
@@ -479,7 +495,7 @@ export default class Form {
 
 		if (buttons.delete) {
 			buttons.delete.addEventListener('click', event => {
-				assert.type(this.handlers.delete, '?fn');
+				assert.type(this.handlers.delete, '?function');
 
 				event.preventDefault();
 				event.stopPropagation();
@@ -583,6 +599,10 @@ export default class Form {
 		};
 	}
 
+	/**
+	 * @param  {Element} field
+	 * @return {Element}
+	 */
 	_getLabel(field) {
 		let
 			label,
@@ -595,6 +615,13 @@ export default class Form {
 		return label;
 	}
 
+	/**
+	 * Deep object property comparison
+	 * @param  {Object} a
+	 * @param  {Object} b
+	 * @param  {Boolean} strict strict value equality
+	 * @return {Boolean}
+	 */
 	_compareObjects(a, b, strict) {
 		let
 			equals = false,

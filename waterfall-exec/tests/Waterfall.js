@@ -1,8 +1,5 @@
 import test from 'ava';
-import waterfallExec from 'waterfall-exec';
-
-const
-	{Waterfall} = waterfallExec;
+import Waterfall from '../src/Waterfall';
 
 test('One job', async t => {
 	let
