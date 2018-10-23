@@ -1,6 +1,6 @@
 {
 	"name": "form-management",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"description": "Form validation and value management layer.",
 	"main": "index.js",
 	"scripts": {
@@ -19,7 +19,7 @@
 	"bugs": {
 		"url": "https://github.com/jakubhruby/js-utils/issues"
 	},
-	"homepage": "https://github.com/jakubhruby/js-utils#readme",
+	"homepage": "https://github.com/jakubhruby/js-utils/tree/master/form-management#readme",
 	"dependencies": {
 		"assert-utils": "latest"
 	}

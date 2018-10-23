@@ -1,6 +1,6 @@
 {
 	"name": "assert-utils",
-	"version": "0.0.10",
+	"version": "0.0.11",
 	"description": "Assertion tool that deeply compares value to its definition.",
 	"main": "index.js",
 	"scripts": {
@@ -20,7 +20,7 @@
 	"bugs": {
 		"url": "https://github.com/jakubhruby/js-utils/issues"
 	},
-	"homepage": "https://github.com/jakubhruby/js-utils#readme",
+	"homepage": "https://github.com/jakubhruby/js-utils/tree/master/assert-utils#readme",
 	"devDependencies": {
 		"ava": "^0.25.0",
 		"browser-env": "^3.2.5",
@@ -29,7 +29,7 @@
 	"ava": {
 		"verbose": true,
 		"files": [
-			"tests/*.js"
+			"tests/**/*.js"
 		],
 		"require": [
 			"esm",

@@ -1,6 +1,6 @@
 {
 	"name": "waterfall-exec",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "FIFO executor for array of Promises",
 	"main": "index.js",
 	"scripts": {
@@ -19,7 +19,7 @@
 	"bugs": {
 		"url": "https://github.com/jakubhruby/js-utils/issues"
 	},
-	"homepage": "https://github.com/jakubhruby/js-utils#readme",
+	"homepage": "https://github.com/jakubhruby/js-utils/tree/master/waterfall-exec#readme",
 	"dependencies": {
 		"assert-utils": "latest"
 	},
@@ -30,7 +30,7 @@
 	"ava": {
 		"verbose": true,
 		"files": [
-			"tests/*.js"
+			"tests/**/*.js"
 		],
 		"require": [
 			"esm"
