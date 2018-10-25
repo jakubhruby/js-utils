@@ -1,6 +1,6 @@
 {
 	"name": "waterfall-exec",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"description": "FIFO executor for array of Promises",
 	"main": "index.js",
 	"scripts": {

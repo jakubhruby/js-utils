@@ -129,5 +129,3 @@ export default class Waterfall {
 		}.bind(this));
 	}
 }
-
-exports.Waterfall = Waterfall;

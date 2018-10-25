@@ -1,4 +1,11 @@
-const
-	{assert} = require('./src/Assert.js');
+import Assert from './src/Assert.js';
 
-exports.assert = assert;
+exports = {
+	Assert: Assert,
+	assert: new Assert()
+};
+
+// CommonJS
+module.exports = exports;
+// ES 6
+export default exports;

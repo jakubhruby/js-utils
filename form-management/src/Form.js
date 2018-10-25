@@ -715,5 +715,3 @@ Form.prototype.VALIDATORS = {
 		};
 	}
 };
-
-exports.Form = Form;

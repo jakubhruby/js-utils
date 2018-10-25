@@ -87,5 +87,3 @@ export default class Assert {
 		}
 	}
 }
-
-exports.assert = new Assert();
