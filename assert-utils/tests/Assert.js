@@ -160,4 +160,27 @@ test('Object properties', t => {
 			object: {}
 		});
 	});
+	t.throws(() => {
+		assert.type({
+			string: null
+		}, {
+			string: '?string'
+		});
+	});
+});
+
+test('Multiple types', t => {
+	t.notThrows(() => {
+		assert.type(2, 'string|number');
+	});
+	t.notThrows(() => {
+		assert.type('this is string', 'string|number');
+	});
+	t.notThrows(() => {
+		assert.type(2, '?string|number');
+	});
+
+	t.throws(() => {
+		assert.type(2, 'string|?number');
+	});
 });

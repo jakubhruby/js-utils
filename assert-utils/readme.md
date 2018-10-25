@@ -95,6 +95,31 @@ assert.type(undefined, {
 })
 ```
 
+#### Multiple possible types
+In case you expect multiple type, just divide them by `|`.
+```javascript
+// valid
+assert.type({
+	stringOrNumber: 2
+}, {
+	stringOrNumber: 'string|number'
+})
+
+// also valid
+assert.type({
+	stringOrNumber: 'this is string'
+}, {
+	stringOrNumber: '?string|number'
+})
+
+// invalid - "?" has to be first
+assert.type({
+	stringOrNumber: 'this is string'
+}, {
+	stringOrNumber: 'string|?number'
+})
+```
+
 #### Equal properties
 Only the properties included in definition object are checked by default. If the tested object has some additional properties, it just passes as true. If you want to check there are no additional properties beside those in the definition, use a special property `_strict` (default is `false`):
 

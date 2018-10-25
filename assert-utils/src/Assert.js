@@ -28,18 +28,23 @@ export default class Assert {
 				def = def.substr(1);
 			}
 
-			if (def === '{}') {
-				valid = typeof value === 'object';
-			}
-			else if (def === '[]' || def === 'array') {
-				valid = value instanceof Array;
-			}
-			else if (def === 'element') {
-				valid = value instanceof HTMLElement;
-			}
-			else {
-				valid = typeof value === def;
-			}
+			valid = def.split('|').some(subdef => {
+				if (subdef === '{}') {
+					return typeof value === 'object';
+				}
+				else if (subdef === 'null') {
+					return value === null;
+				}
+				else if (subdef === '[]' || subdef === 'array') {
+					return value instanceof Array;
+				}
+				else if (subdef === 'element') {
+					return value instanceof HTMLElement;
+				}
+				else {
+					return typeof value === subdef;
+				}
+			});
 
 			if (!required) {
 				valid = valid || value === undefined;
