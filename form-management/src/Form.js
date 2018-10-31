@@ -25,6 +25,7 @@ export default class Form {
 	 * @param {Boolean} [config.displayDelete] display delete button @default false
 	 * @param {Boolean} [config.displayLoadingMask] display overlay with loading icon when saving form @default false
 	 * @param {Function} [config.translate] translate function in form function(text) {return translatedText;}
+	 * @param {Boolean} [config.autoFocus] focus the first editable field on edit start
 	 */
 	constructor(config) {
 		assert.type(config, {
@@ -43,7 +44,8 @@ export default class Form {
 			displayEdit: '?boolean',
 			displayDelete: '?boolean',
 			displayLoadingMask: '?boolean',
-			translate: '?function'
+			translate: '?function',
+			autoFocus: '?boolean'
 		});
 
 		this.form = config.form;
@@ -58,6 +60,7 @@ export default class Form {
 		this.displayDelete = config.displayDelete;
 		this.displayLoadingMask = config.displayLoadingMask;
 		this.translate = config.translate;
+		this.autoFocus = config.autoFocus;
 
 		this.validatedValues = {};
 		this.data = {};
@@ -252,7 +255,7 @@ export default class Form {
 			field.disabled = false;
 		});
 
-		if (firstField) {
+		if (firstField && this.autoFocus) {
 			firstField.focus();
 		}
 	}

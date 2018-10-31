@@ -20,7 +20,7 @@ checkIsString('this is string'); // valid, outputs nothing
 checkIsString(2); // invalid, throws an error with message 'Assertion error: expected "string" but got "number"'
 ```
 
-### assert.value(value, expectation);
+### assert.value(value, expectation)
 #### value |`any`
 #### expectation |`any`
 
@@ -31,7 +31,7 @@ assert.value('1' + 0, '10'); // valid
 assert.value('1' + 0, 1); // invalid
 ```
 
-### assert.type(value, definition);
+### assert.type(value, definition)
 #### value |`any`
 #### definition |`any`
 

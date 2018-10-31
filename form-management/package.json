@@ -1,6 +1,6 @@
 {
 	"name": "form-management",
-	"version": "0.0.9",
+	"version": "0.0.10",
 	"description": "Form validation and value management layer.",
 	"main": "index.js",
 	"scripts": {
