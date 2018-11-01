@@ -14,12 +14,12 @@ import waterfallExec from 'waterfall-exec';
 const {Waterfall} = waterfallExec;
 
 let
-	jobs = [
-		() => Promise.resolve(),
-		() => Promise.resolve(),
-		() => Promise.resolve()
-	],
-	waterfall = new Waterfall();
+    jobs = [
+        () => Promise.resolve(),
+        () => Promise.resolve(),
+        () => Promise.resolve()
+    ],
+    waterfall = new Waterfall();
 
 waterfall.exec(jobs);
 ```
@@ -36,7 +36,7 @@ waterfall.exec(jobs);
 
 ##### options |`object`_optional_
 - `waitForItems`|`boolean`_optional_ - causes main Promise is never resolved and Waterfall executes every new job added to the `jobs` array. Default is `false`.
-- `waitTimeout`|`number`_optional_ - timeout for `waitForItems`. If not set, there is no timeout and `waitForItems` won't work. Default is `undefined`.
+- `waitTimeout`|`number`_optional_ - timeout for `waitForItems`. If `undefined`, there is no timeout and `waterfall` will tick forever. Default is `undefined`.
 - `checkInterval`|`number`_optional_ - interval in miliseconds for `waitForItems`. Default is `1000`.
 
 #### Waterfall.stop()
