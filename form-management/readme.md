@@ -58,7 +58,7 @@ function checkMyFieldValue(field, value) {
 - `displayDelete`|`boolean`_optional_ - display delete button. Default is `false`.
 - `displayLoadingMask`|`boolean`_optional_ - display overlay with loading icon when saving form. Default is `false`.
 - `translate`|`function`_optional_ - translate function in form `function(text) {return translatedText;}`
-- `autoFocus`|`boolean`_optional_ - focus the first editable field on edit start
+- `autoFocus`|`boolean`_optional_ - focus the first editable field on edit start. Default is `false`
 
 #### Form.getEl()
 Returns `<form>` element associated with the `Form` instance.

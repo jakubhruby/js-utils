@@ -25,7 +25,7 @@ export default class Form {
 	 * @param {Boolean} [config.displayDelete] display delete button @default false
 	 * @param {Boolean} [config.displayLoadingMask] display overlay with loading icon when saving form @default false
 	 * @param {Function} [config.translate] translate function in form function(text) {return translatedText;}
-	 * @param {Boolean} [config.autoFocus] focus the first editable field on edit start
+	 * @param {Boolean} [config.autoFocus] focus the first editable field on edit start @default false
 	 */
 	constructor(config) {
 		assert.type(config, {
@@ -305,7 +305,7 @@ export default class Form {
 			field.classList.remove('invalid');
 		});
 		this.setData(this.data);
-		this.validatedValues = {};
+		this.resetValidation();
 		this.dirty = false;
 	}
 
@@ -402,24 +402,30 @@ export default class Form {
 
 					return fieldValidation
 						.then(function(validationResult) {
-							if (validationResult.valid || !this.form.classList.contains('active')) {
-								field.classList.remove('invalid');
+							if (this.form.classList.contains('active')) {
+								if (validationResult.valid || !this.form.classList.contains('active')) {
+									field.classList.remove('invalid');
 
-								if (label) {
-									label.classList.remove('invalid');
+									if (label) {
+										label.classList.remove('invalid');
+									}
 								}
+								else {
+									validationWaterfall.stop();
+									field.classList.add('invalid');
+
+									if (label) {
+										label.classList.add('invalid');
+										label.setAttribute('data-hint', validationResult.hint || '');
+									}
+								}
+								this.validatedValues[fieldName].valid = validationResult.valid;
+								return validationResult.valid;
 							}
 							else {
 								validationWaterfall.stop();
-								field.classList.add('invalid');
-
-								if (label) {
-									label.classList.add('invalid');
-									label.setAttribute('data-hint', validationResult.hint || '');
-								}
+								return true;
 							}
-							this.validatedValues[fieldName].valid = validationResult.valid;
-							return validationResult.valid;
 						}.bind(this));
 				}.bind(this);
 			}, this));
