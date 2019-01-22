@@ -12,20 +12,21 @@ export default class Form {
 	 * @param {Object} config configuration
 	 * @param {Element} config.form <form> element
 	 * @param {Object} config.handlers event listeners
-	 * @param {Function} config.handlers.save is called when the form is submitted
-	 * @param {Function} [config.handlers.delete] is called when delete button is pressed
-	 * @param {Function} [config.handlers.change] is called when any field changes its value
-	 * @param {String} [config.id] form identification
-	 * @param {Object} [config.validators] validation functions dictionary, each in form validatorName(value, field) {return {valid: [Boolean], hint: [String]}}
+	 * @param {function} config.handlers.save is called when the form is submitted
+	 * @param {function} [config.handlers.delete] is called when delete button is pressed
+	 * @param {function} [config.handlers.change] is called when any field changes its value
+	 * @param {function} [config.handlers.cancel] is called when edit is cancelled
+	 * @param {string} [config.id] form identification
+	 * @param {Object} [config.validators] validation functions dictionary, each in form validatorName(value, field) {return {valid: [boolean], hint: [string]}}
 	 * @param {Object} [config.plugins] dictionary of special fields, each in form {init: fn(field) {}, getValue() {return value;}}
-	 * @param {Boolean} [config.editable] enable form editing @default true
-	 * @param {Boolean} [config.editOnClick] enable edit mode by clicking somewhere on form @default false
-	 * @param {Boolean} [config.persistentEditMode] edit mode is always enabled (standard form behavior) @default true
-	 * @param {Boolean} [config.displayEdit] display edit button @default false
-	 * @param {Boolean} [config.displayDelete] display delete button @default false
-	 * @param {Boolean} [config.displayLoadingMask] display overlay with loading icon when saving form @default false
-	 * @param {Function} [config.translate] translate function in form function(text) {return translatedText;}
-	 * @param {Boolean} [config.autoFocus] focus the first editable field on edit start @default false
+	 * @param {boolean} [config.editable=true] enable form editing
+	 * @param {boolean} [config.editOnClick=false] enable edit mode by clicking somewhere on form
+	 * @param {boolean} [config.persistentEditMode=true] edit mode is always enabled (standard form behavior)
+	 * @param {boolean} [config.displayEdit=false] display edit button
+	 * @param {boolean} [config.displayDelete=false] display delete button
+	 * @param {boolean} [config.displayLoadingMask=false] display overlay with loading icon when saving form
+	 * @param {function} [config.translate] translate function in form function(text) {return translatedText;}
+	 * @param {boolean} [config.autoFocus=false] focus the first editable field on edit start
 	 */
 	constructor(config) {
 		assert.type(config, {
@@ -33,7 +34,8 @@ export default class Form {
 			handlers: {
 				save: 'function',
 				delete: '?function',
-				change: '?function'
+				change: '?function',
+				cancel: '?function'
 			},
 			id: '?string',
 			validators: '?{}',
@@ -66,7 +68,10 @@ export default class Form {
 		this.data = {};
 
 		if (this.persistentEditMode) {
-			this.editFields();
+			this.edit();
+		}
+		else {
+			this.cancel();
 		}
 
 		for (let plugin in this.plugins) {
@@ -80,8 +85,7 @@ export default class Form {
 		}
 
 		this._bindFormHandlers();
-		this.setData(config.data || {});
-		this.cancelEdit();
+		this._setInitialData(config.data);
 	}
 
 	getEl() {
@@ -100,7 +104,7 @@ export default class Form {
 			let
 				name = field.getAttribute('name');
 
-			if (this.plugins.hasOwnProperty(name)) {
+			if (name in this.plugins) {
 				data[name] = this.plugins[name].getValue();
 			}
 			else {
@@ -121,8 +125,23 @@ export default class Form {
 				else if (field.closest('[type="checkbox"]') === field) {
 					data[name] = field.closest(':checked') === field;
 				}
+				else if (field.closest('select[multiple]') === field) {
+					data[name] = [];
+					for (let i = 0; i < field.options.length; i++) {
+						if (field.options[i].selected) {
+							let
+								value = field.options[i].value;
+
+							if (value == parseInt(value)) {
+								value = parseInt(value);
+							}
+
+							data[name].push(value);
+						}
+					}
+				}
 				else {
-					data[name] = field.value;
+					data[name] = field.value || undefined;
 				}
 			}
 		});
@@ -139,7 +158,7 @@ export default class Form {
 	}
 
 	/**
-	 * @param {Boolean} editable
+	 * @param {boolean} editable
 	 */
 	setEditable(editable) {
 		assert.type(editable, 'boolean');
@@ -148,12 +167,15 @@ export default class Form {
 			let
 				buttons = this.getButtons();
 
-			this.cancelEdit();
 			this.editable = editable;
+
+			if (!editable) {
+				this.cancel();
+			}
 
 			if (buttons.edit) {
 				if (editable && this.displayEdit) {
-					buttons.edit.style.display = 'block';
+					buttons.edit.style.display = null;
 				}
 				else {
 					buttons.edit.style.display = 'none';
@@ -170,23 +192,24 @@ export default class Form {
 
 		this.form.querySelectorAll('.field').forEach(field => {
 			let
-				name = field.getAttribute('name');
+				name = field.getAttribute('name'),
+				value = data[name];
 
-			if (data.hasOwnProperty(name)) {
-				if (data[name] === undefined) {
-					data[name] = '';
+			if (name in data) {
+				if (value === undefined) {
+					value = '';
 				}
-				else if (field.closest('select') === field && !data[name]) {
+				else if (field.closest('select') === field && !value) {
 					let
 						option = field.querySelector('option');
 
-					data[name] = option ? option.value : undefined;
+					value = option ? option.value : undefined;
 				}
-				else if (field.getAttribute('type') === 'checkbox' && typeof data[name] === 'string') {
-					data[name] = data[name] === 'on' ? true : false;
+				else if (field.getAttribute('type') === 'checkbox' && typeof value === 'string') {
+					value = value === 'on' ? true : false;
 				}
 
-				if (data[name] !== undefined) {
+				if (value !== undefined) {
 					if (field.closest('[type="radio"]') === field) {
 						let
 							fieldToCheck = this.form.querySelector('[type="radio"][name="' + name + '"]');
@@ -196,37 +219,46 @@ export default class Form {
 						}
 					}
 					else if (field.closest('[type="checkbox"]') === field) {
-						field.checked = data[name];
+						field.checked = value;
 					}
 					else if (field.closest('select') === field) {
 						let
-							optionToSelect = field.querySelector('option[value="' + data[name] + '"]');
+							optionToSelect;
 
-						if (optionToSelect) {
-							optionToSelect.selected = true;
+						if (!(value instanceof Array)) {
+							value = [value];
 						}
+
+						value.forEach(optionValue => {
+							optionToSelect = field.querySelector('option[value="' + optionValue + '"]');
+
+							if (optionToSelect) {
+								optionToSelect.selected = true;
+							}
+						});
 					}
 					else {
-						field.value = data[name];
+						field.value = value;
 					}
 				}
-				this.data[name] = data[name];
+
+				this.data[name] = data[name] || undefined;
 			}
 		});
 	}
 
 	/**
-	 * @param {String} id
+	 * @param {string} id
 	 */
 	setId(id) {
 		assert.type(id, 'string');
 		this.id = id;
 	}
 
-	editFields() {
+	edit() {
 		let
-			buttons = this._getButtons(),
-			firstField = this.form.querySelector('.field:not(.readonly)');
+			firstField,
+			buttons = this._getButtons();
 
 		this.form.classList.add('active');
 
@@ -239,32 +271,33 @@ export default class Form {
 		}
 
 		if (buttons.save) {
-			buttons.save.style.display = 'block';
+			buttons.save.style.display = null;
 		}
 
 		if (buttons.cancel) {
-			buttons.cancel.style.display = 'block';
+			buttons.cancel.style.display = this.persistentEditMode ? 'none' : null;
 		}
 
-		if (buttons.delete && this.displayDelete) {
-			buttons.delete.style.display = 'block';
+		if (buttons.delete) {
+			buttons.delete.style.display = this.displayDelete ? null : 'none';
 		}
 
 		this.form.querySelectorAll('.field').forEach(field => {
-			field.classList.remove('readonly');
-			field.disabled = false;
+			field.removeAttribute('readonly');
 		});
+
+		firstField = this.form.querySelector('.field:not([readonly])');
 
 		if (firstField && this.autoFocus) {
 			firstField.focus();
 		}
 	}
 
-	cancelEdit() {
-		let
-			buttons = this._getButtons();
-
+	cancel() {
 		if (!this.persistentEditMode) {
+			let
+				buttons = this._getButtons();
+
 			this.form.classList.remove('active');
 
 			if (this.form.classList.contains('entry') && buttons.addNew) {
@@ -272,16 +305,15 @@ export default class Form {
 				delete buttons.addNew;
 			}
 			else if (buttons.addNew) {
-				buttons.addNew.style.display = 'block';
+				buttons.addNew.style.display = null;
 			}
 
 			this.form.querySelectorAll('.field').forEach(field => {
-				field.classList.add('readonly');
-				field.disabled = true;
+				field.setAttribute('readonly', 'readonly');
 			});
 
-			if (buttons.edit && this.displayEdit) {
-				buttons.edit.style.display = 'block';
+			if (buttons.edit) {
+				buttons.edit.style.display = this.displayEdit ? null : 'none';
 			}
 
 			if (buttons.save) {
@@ -296,23 +328,19 @@ export default class Form {
 				buttons.delete.style.display = 'none';
 			}
 
-			document.activeElement.blur();
-			window.getSelection().empty();
+			if (document.activeElement.closest('form') === this.form) {
+				document.activeElement.blur();
+				window.getSelection().empty();
+			}
 		}
 
-		this.hideLoadingMask();
-		this.form.querySelectorAll('.invalid').forEach(field => {
-			field.classList.remove('invalid');
-		});
-		this.setData(this.data);
-		this.resetValidation();
-		this.dirty = false;
+		this.reset();
 	}
 
 	save() {
 		this.validateForm()
-			.then(function(validations) {
-				if (validations.every(function(validation) {
+			.then(validations => {
+				if (validations.every(validation => {
 					return validation;
 				})) {
 					this.dirty = false;
@@ -323,17 +351,24 @@ export default class Form {
 						this.showLoadingMask();
 					}
 				}
-			}.bind(this))
-			.catch(function(reason) {
+			})
+			.catch(reason => {
 				console.error(reason);
 			});
+	}
+
+	reset() {
+		this.setData(this.data);
+		this.hideLoadingMask();
+		this.resetValidation();
+		this.dirty = false;
 	}
 
 	validateForm() {
 		let
 			pendingValidations = [];
 
-		this.form.querySelectorAll('.field[data-validators]:not(.readonly)').forEach(field => {
+		this.form.querySelectorAll('.field[data-validators]:not([readonly])').forEach(field => {
 			pendingValidations.push(this.validateField(field));
 		});
 		return Promise.all(pendingValidations);
@@ -341,24 +376,31 @@ export default class Form {
 
 	/**
 	 * @param {Element} field
-	 * @return {Boolean or Promise}
+	 * @return {(boolean|Promise)}
 	 */
 	validateField(field) {
 		let
 			valid,
-			label = this._getLabel(field),
+			labels = this._getLabels(field),
 			fieldName = field.getAttribute('name'),
 			validationValue = field.value,
 			validators = (field.getAttribute('data-validators') || 'default').split(' '),
-			validationWaterfall = new Waterfall(),
-			defaultValidator = function() {
-				return {
-					valid: true
-				};
-			};
+			validationWaterfall = new Waterfall();
 
-		if (field.closest('[type="checkbox"]') == field) {
+		if (field.getAttribute('type') == 'checkbox') {
 			validationValue = field.checked;
+		}
+
+		if (field.getAttribute('type') == 'radio') {
+			let
+				checkedField = this.form.querySelector('[name="' + field.getAttribute('name') + '"]:checked');
+
+			if (checkedField) {
+				validationValue = checkedField.value;
+			}
+			else {
+				validationValue = undefined;
+			}
 		}
 
 		if (validators.indexOf('passwordConfirm') >= 0) {
@@ -371,7 +413,7 @@ export default class Form {
 			};
 		}
 
-		if (this.validatedValues.hasOwnProperty(fieldName) && JSON.stringify(this.validatedValues[fieldName].value) === JSON.stringify(validationValue)) {
+		if ((fieldName in this.validatedValues) && JSON.stringify(this.validatedValues[fieldName].value) === JSON.stringify(validationValue)) {
 			let
 				validationResult = this.validatedValues[fieldName].valid;
 
@@ -387,10 +429,10 @@ export default class Form {
 				value: validationValue
 			};
 
-			valid = validationWaterfall.exec(validators.map(function(validator) {
-				return function() {
+			valid = validationWaterfall.exec(validators.map(validator => {
+				return () => {
 					let
-						fieldValidation = (this.validators[validator] || defaultValidator).call(this, validationValue, field);
+						fieldValidation = (this.validators[validator] || this.validators.default).call(this, validationValue, field);
 
 					if (typeof fieldValidation === 'function') {
 						fieldValidation = fieldValidation();
@@ -401,22 +443,26 @@ export default class Form {
 					}
 
 					return fieldValidation
-						.then(function(validationResult) {
+						.then(validationResult => {
 							if (this.form.classList.contains('active')) {
 								if (validationResult.valid || !this.form.classList.contains('active')) {
 									field.classList.remove('invalid');
 
-									if (label) {
-										label.classList.remove('invalid');
+									if (labels.length) {
+										labels.forEach(label => {
+											label.classList.remove('invalid');
+										});
 									}
 								}
 								else {
 									validationWaterfall.stop();
 									field.classList.add('invalid');
 
-									if (label) {
-										label.classList.add('invalid');
-										label.setAttribute('data-hint', validationResult.hint || '');
+									if (labels.length) {
+										labels.forEach(label => {
+											label.classList.add('invalid');
+											label.setAttribute('data-hint', validationResult.hint || '');
+										});
 									}
 								}
 								this.validatedValues[fieldName].valid = validationResult.valid;
@@ -426,9 +472,9 @@ export default class Form {
 								validationWaterfall.stop();
 								return true;
 							}
-						}.bind(this));
-				}.bind(this);
-			}, this));
+						});
+				};
+			}));
 
 			this.validatedValues[fieldName].valid = valid;
 		}
@@ -437,147 +483,10 @@ export default class Form {
 	}
 
 	resetValidation() {
+		this.form.querySelectorAll('.invalid').forEach(field => {
+			field.classList.remove('invalid');
+		});
 		this.validatedValues = {};
-	}
-
-	/**
-	 * @param  {Element} field
-	 */
-	_validatePreviousFields(field) {
-		let
-			fieldVisited = false;
-
-		// validate all previous fields
-		this.form.querySelectorAll('.field:not(.readonly)').forEach(item => {
-			if (field === item) {
-				fieldVisited = true;
-			}
-
-			if (!fieldVisited) {
-				this.validateField(item);
-			}
-		});
-	}
-
-	_bindFormHandlers() {
-		let
-			buttons = this._getButtons();
-
-		this.form.addEventListener('click', event => {
-			if (event.target.tagName !== 'A' && this.editable && this.editOnClick) {
-				event.stopPropagation();
-
-				if (this.form.querySelectorAll('.field.readonly').length) {
-					this.editFields();
-				}
-			}
-		});
-
-		this.form.addEventListener('submit', event => {
-			event.preventDefault();
-			event.stopPropagation();
-			this.save();
-		});
-
-		if (buttons.edit) {
-			buttons.edit.addEventListener('click', event => {
-				if (this.editable) {
-					event.stopPropagation();
-					this.editFields();
-				}
-			});
-		}
-
-		if (buttons.save) {
-			buttons.save.addEventListener('click', event => {
-				event.stopPropagation();
-				this.save();
-			});
-		}
-
-		if (buttons.cancel) {
-			buttons.cancel.addEventListener('click', event => {
-				event.stopPropagation();
-				this.cancelEdit();
-			});
-		}
-
-		if (buttons.delete) {
-			buttons.delete.addEventListener('click', event => {
-				assert.type(this.handlers.delete, '?function');
-
-				event.preventDefault();
-				event.stopPropagation();
-
-				if (this.handlers.delete) {
-					this.handlers.delete.call(this);
-				}
-
-				if (this.displayLoadingMask) {
-					this.showLoadingMask();
-				}
-			});
-		}
-
-		this.form.querySelectorAll('.field').forEach(field => {
-			let
-				handler = event => {
-					let
-						field = event.target,
-						label = this._getLabel(field);
-
-					field.classList.remove('invalid');
-
-					if (label) {
-						label.classList.remove('invalid');
-					}
-					this.dirty = true;
-				};
-
-			field.addEventListener('input', handler);
-			field.addEventListener('change', handler);
-			field.addEventListener('focus', event => {
-				this._validatePreviousFields(event.target);
-			});
-			field.addEventListener('blur', event => {
-				let
-					fields = this.form.querySelectorAll('.field:not(.readonly)');
-
-				if (event.target === fields[fields.length - 1]) {
-					this.validateForm();
-				}
-
-				// validate only if there's any value to not bother user during walking through empty fields
-				if (event.target.value !== undefined) {
-					this.validateField(event.target);
-				}
-			});
-		});
-
-		this.form.querySelectorAll('select.field').forEach(field => {
-			field.addEventListener('keydown', event => {
-				// ENTER
-				if (event.keyCode === 13) {
-					event.preventDefault();
-					this.save();
-				}
-			});
-		});
-
-		document.addEventListener('keydown', event => {
-			// ESC
-			if (event.keyCode === 27 && event.target.closest('form') === this.form) {
-				event.preventDefault();
-				event.stopPropagation();
-				this.cancelEdit();
-			}
-		});
-
-		window.addEventListener('beforeunload', () => {
-			if (this.dirty) {
-				return this._translate('You have unsaved changes, do you really want to leave?');
-			}
-		});
 	}
 
 	showLoadingMask() {
@@ -598,6 +507,163 @@ export default class Form {
 		}
 	}
 
+	/**
+	 * @param  {Element} field
+	 */
+	_validatePreviousFields(field) {
+		let
+			fieldVisited = false;
+
+		// validate all previous fields
+		this.form.querySelectorAll('.field:not([readonly])').forEach(item => {
+			if (field === item) {
+				fieldVisited = true;
+			}
+
+			if (!fieldVisited) {
+				this.validateField(item);
+			}
+		});
+	}
+
+	_bindFormHandlers() {
+		let
+			buttons = this._getButtons();
+
+		this.form.addEventListener('click', ev => {
+			if (ev.target.tagName !== 'A' && this.editable && this.editOnClick) {
+				ev.stopPropagation();
+
+				if (this.form.querySelectorAll('.field[readonly]').length) {
+					this.editFields();
+				}
+			}
+		});
+
+		this.form.addEventListener('submit', ev => {
+			ev.preventDefault();
+			ev.stopPropagation();
+			this.save();
+		});
+
+		if (buttons.edit) {
+			buttons.edit.addEventListener('click', ev => {
+				if (this.editable) {
+					ev.preventDefault();
+					ev.stopPropagation();
+					this.edit();
+				}
+			});
+		}
+
+		if (buttons.save) {
+			buttons.save.addEventListener('click', ev => {
+				ev.preventDefault();
+				ev.stopPropagation();
+				this.save();
+			});
+		}
+
+		if (buttons.cancel) {
+			buttons.cancel.addEventListener('click', ev => {
+				ev.preventDefault();
+				ev.stopPropagation();
+				this.cancel();
+
+				if (this.handlers.cancel) {
+					this.handlers.cancel.call(this);
+				}
+			});
+		}
+
+		if (buttons.delete) {
+			buttons.delete.addEventListener('click', ev => {
+				assert.type(this.handlers.delete, '?function');
+
+				ev.preventDefault();
+				ev.stopPropagation();
+
+				if (this.handlers.delete) {
+					this.handlers.delete.call(this);
+				}
+
+				if (this.displayLoadingMask) {
+					this.showLoadingMask();
+				}
+			});
+		}
+
+		this.form.querySelectorAll('.field').forEach(field => {
+			let
+				handler = ev => {
+					let
+						field = ev.currentTarget,
+						labels = this._getLabels(field);
+
+					field.classList.remove('invalid');
+
+					if (labels) {
+						labels.forEach(label => {
+							label.classList.remove('invalid');
+						});
+					}
+
+					if (this.handlers.change) {
+						this.handlers.change();
+					}
+					this.dirty = true;
+				};
+
+			field.addEventListener('input', handler);
+			field.addEventListener('change', handler);
+			field.addEventListener('focus', ev => {
+				this._validatePreviousFields(ev.currentTarget);
+			});
+			field.addEventListener('blur', ev => {
+				let
+					fields = this.form.querySelectorAll('.field:not([readonly])');
+
+				if (ev.currentTarget === fields[fields.length - 1]) {
+					this.validateForm();
+				}
+
+				// validate only if there's any value to not bother user during walking through empty fields
+				if (ev.currentTarget.value !== undefined) {
+					this.validateField(ev.currentTarget);
+				}
+			});
+		});
+
+		this.form.querySelectorAll('select.field').forEach(field => {
+			field.addEventListener('keydown', ev => {
+				// ENTER
+				if (ev.keyCode === 13) {
+					ev.preventDefault();
+					this.save();
+				}
+			});
+		});
+
+		document.addEventListener('keydown', ev => {
+			// ESC
+			if (ev.keyCode === 27 && ev.target.closest('form') === this.form) {
+				ev.preventDefault();
+				ev.stopPropagation();
+				this.cancel();
+
+				if (this.handlers.cancel) {
+					this.handlers.cancel.call(this);
+				}
+			}
+		});
+
+		window.addEventListener('beforeunload', () => {
+			if (this.dirty) {
+				return this._translate('You have unsaved changes, do you really want to leave?');
+			}
+		});
+	}
+
 	_getButtons() {
 		return {
 			addNew: this.form.querySelector('.add-new'),
@@ -612,24 +678,43 @@ export default class Form {
 	 * @param  {Element} field
 	 * @return {Element}
 	 */
-	_getLabel(field) {
+	_getLabels(field) {
 		let
-			label,
-			fieldId = field.getAttribute('id');
+			labels = [],
+			fields = this.form.querySelectorAll('[name="' + field.getAttribute('name') + '"]');
 
-		if (fieldId !== undefined) {
-			label = this.form.querySelector('label[for="' + fieldId + '"]');
-		}
+		fields.forEach(field => {
+			let
+				fieldId = field.getAttribute('id');
 
-		return label;
+			this.form.querySelectorAll('label[for="' + fieldId + '"]').forEach(label => {
+				labels.push(label);
+			});
+		});
+
+		return labels;
+	}
+
+	/**
+	 * Sets initial data for each form field
+	 * @param {Object} data
+	 */
+	_setInitialData(data) {
+		assert.type(data, '?{}');
+
+		let
+			initialData = this.getData();
+
+		Object.assign(initialData, data || {});
+		this.setData(initialData);
 	}
 
 	/**
 	 * Deep object property comparison
 	 * @param  {Object} a
 	 * @param  {Object} b
-	 * @param  {Boolean} strict strict value equality
-	 * @return {Boolean}
+	 * @param  {boolean} strict strict value equality
+	 * @return {boolean}
 	 */
 	_compareObjects(a, b, strict) {
 		let

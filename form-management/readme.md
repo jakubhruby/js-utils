@@ -48,6 +48,7 @@ function checkMyFieldValue(field, value) {
 	- `save`|`function` - is called when the form is submitted
 	- `delete`|`function`_optional_ - is called when delete button is pressed
 	- `change`|`function`_optional_ - is called when any field changes its value
+	- `cancel`|`function`_optional_ - is called when edit is cancelled
 - `id`|`string`_optional_ - custom form identification
 - `validators`|`object`_optional_ - validation functions dictionary, each in form `validatorName(value, field) {return {valid: [Boolean], hint: [String]}}`
 - `plugins`|`object`_optional_ - dictionary of special fields, each in form `{init: fn(field) {}, getValue() {return value;}}`
@@ -97,14 +98,17 @@ Key-value object with new form data.
 Sets new custom identification.
 ##### id |`string`
 
-#### Form.editFields()
+#### Form.edit()
 Switches to editing mode (if not yet) and focuses the first editable field.
 
-#### Form.cancelEdit()
+#### Form.cancel()
 Switches to read mode (if not disabled by `persistentEditMode`), removes validation hints and invalid states, cleares dirty state and blurs form fields.
 
 #### Form.save()
 Runs form validation and calls `save` handler if successfull.
+
+#### Form.reset()
+Resets form to the default state using original data values.
 
 #### Form.validateForm()
 Validates all form fields.
