@@ -1,11 +1,6 @@
 {
 	"globals": {
-		"__dirname": true,
-		"module": true,
-		"process": true,
-		"require": true,
-		"google": true,
-		"exports": true
+		"google": true
 	},
 	"parserOptions": {
 		"sourceType": "module",
@@ -13,7 +8,8 @@
 	},
 	"env": {
 		"es6": true,
-		"browser": true
+		"browser": true,
+		"node": true
 	},
 	"extends": "eslint:recommended",
 	"rules": {
